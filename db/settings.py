@@ -19,5 +19,3 @@ Base = declarative_base()
 engine = create_engine(f'{DB_DIALECT}+{DB_DRIVER}://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
 
 
-if __name__ == '__main__':
-  main()

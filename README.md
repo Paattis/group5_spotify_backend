@@ -37,6 +37,11 @@ DB_PASS=(your db password here)
 DB_NAME=""
 ```
 
+* Run the migrations to create the database tables
+```
+$ alembic upgrade head
+```
+
 
 * Run the app
 ```

@@ -24,8 +24,8 @@ from db.models import Location
 models = [
     Location,
 ]
-
-target_metadata = [m.Base.metadata for m in models]
+print(dir(Location))
+target_metadata = [m.metadata for m in models]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
