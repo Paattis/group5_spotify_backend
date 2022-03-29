@@ -34,6 +34,7 @@ DB_PORT="3306"
 DB_HOST="127.0.0.1"
 DB_USER=(your db user's name here)
 DB_PASS=(your db password here)
+DB_NAME=""
 ```
 
 
