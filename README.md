@@ -36,7 +36,7 @@ DB_USER=(your db user's name here)
 DB_PASS=(your db password here)
 ```
 
-```
+
 * Run the app
 ```
 $ set FLASK_APP=run.py
