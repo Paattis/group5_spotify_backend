@@ -4,3 +4,4 @@ SQLAlchemy==1.4.32
 python-dotenv==0.20.0
 pymysql==1.0.2
 alembic==1.7.7
+Flask-HTTPAuth==4.5.0
