@@ -1,2 +1,2 @@
-
-from .database import db, init_app, conn_str, Location
+from .setup import db, conn_str, init_app
+from .models import Location

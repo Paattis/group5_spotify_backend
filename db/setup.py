@@ -1,14 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, Column, DateTime
-from datetime import datetime
 from dotenv import load_dotenv
-
-
-########################################
-################ SETUP #################
-########################################
 
 load_dotenv()
 
@@ -35,23 +28,4 @@ def init_app(app: Flask):
     migrate = Migrate(app=app, db=db)
 
     return db, migrate
-
-
-########################################
-################ MODELS ################
-########################################
-
-class DateMixin(object):
-    __abstract__ = True
-    created_on = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, onupdate=datetime.now)
-
-
-class Location(db.Model, DateMixin):
-    __tablename__ = "Location"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255))
-
-    def __repr__(self):
-        return f"Location(id={self.id}, name={self.name})"
 
