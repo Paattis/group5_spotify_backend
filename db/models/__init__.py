@@ -1,2 +1,1 @@
-from .DateMixin import DateMixin
-from .Location import Location
+from . import Location

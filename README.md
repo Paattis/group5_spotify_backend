@@ -1,31 +1,24 @@
 # Group 5 Spotify application backend
 
-### installation/running it
+## Installation
 
-* If the virtual environment doesn't exist, create it
+### If the virtual environment doesn't exist, create it
 ```
-$ pip install virtualenv
-$ python -m virtualenv venv
-```
-
-* Activate the virtual environment 
-
-#### Windows
-```
-$ .\venv\Scripts\activate.bat
+$ python -m venv venv
 ```
 
-#### Linux/MacOs/other Unix-like OS
+### Activate the virtual environment 
 ```
-$ source venv/bin/activate
+$ source venv/bin/activate      // Unix
+$ .\venv\Scripts\activate.bat   // Windows
 ```
 
-* Install the required packages
+### Install the required packages
 ```
 $ pip install -r requirements.txt
 ```
 
-* Fill the .env file
+### Populate .env file
 
 ```
 DB_DIALECT="mysql"
@@ -37,14 +30,19 @@ DB_PASS=(your db password here)
 DB_NAME=""
 ```
 
-* Run the migrations to create the database tables
+### Set flask variables
+
 ```
-$ alembic upgrade head
+$ export FLASK_APP=app.py   // Unix
+$ set FLASK_APP=app.py      // Windows
 ```
 
-
-* Run the app
+### Database setup
 ```
-$ set FLASK_APP=run.py
-$ flask run -p 8000
+$ flask db upgrade
+```
+See https://flask-migrate.readthedocs.io/en/latest/ for more info.
+### Run 
+```
+$ flask run
 ```

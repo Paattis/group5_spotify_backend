@@ -1,19 +1,11 @@
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, String, Column
+from .DateMixin import DateMixin
+from db.setup import db
 
-from . import DateMixin
-
-Base = declarative_base()
-
-class Location(Base, DateMixin):
+class Location(db.Model, DateMixin):
     __tablename__ = "Location"
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
 
     def __repr__(self):
         return f"Location(id={self.id}, name={self.name})"
-
