@@ -22,4 +22,16 @@ database, migrate = db.init_app(app)
 
 @app.route("/")
 def index():
-    return "index"
+    import spotipy
+    import os
+    from spotipy.oauth2 import SpotifyClientCredentials
+    print("id", os.getenv("SPOTIPY_CLIENT_ID"))
+    print("id", os.getenv("SPOTIPY_CLIENT_SECRET"))
+    auth_manager = SpotifyApi()
+    #print(SpotifyClientCredentials().get_access_token())
+    #auth_manager = SpotifyClientCredentials()
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    dat = sp.search(q='pitbull', market='FI')
+
+    #SpotifyApi().get_cached_token()
+    return dat

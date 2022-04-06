@@ -18,16 +18,17 @@ from db import db
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
+from spotipy import CacheHandler
 
-SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-SPOTIFY_CLIENT_SECRET= os.getenv("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI")
-SPOTIFY_AUTH_BASE_URL = os.getenv("SPOTIFY_AUTH_BASE_URL")
-SPOTIFY_BASE_URL = os.getenv("SPOTIFY_BASE_URL")
+SPOTIPY_CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
+SPOTIPY_CLIENT_SECRET= os.getenv("SPOTIPY_CLIENT_SECRET")
+SPOTIPY_REDIRECT_URI = os.getenv("SPOTIPY_REDIRECT_URI")
+SPOTIPY_AUTH_BASE_URL = os.getenv("SPOTIPY_AUTH_BASE_URL")
+SPOTIPY_BASE_URL = os.getenv("SPOTIPY_BASE_URL")
 
 
-class SpotifyApi(object):
-  """docstring for SpotifyApi
+class SpotifyApi(CacheHandler):
+  """a class for connecting to the Spotify API
   
   Attributes:
       access_token (string): the latest access_token for the API
@@ -38,44 +39,59 @@ class SpotifyApi(object):
     self.access_token = None
     self.lastTokenUpdate = None
     self.tokenExpireTime = None
+    super().__init__()
 
 
-  def getAccessToken(self):
-    token = AccessToken.query.filter(
-      AccessToken.expire_time>datetime.now()+timedelta(seconds=60)
-    ).first()
-    if token:
-      self.access_token = token.access_token
-      self.tokenExpireTime = token.expire_time
+  def save_token_to_cache(self, token_info):
+    print("TOKEN INFO", token_info)
+    pass
 
-    print("Tokens found", token)
-    print(SPOTIFY_AUTH_BASE_URL)
+  def get_access_token(self, as_dict=True):
+    return self.get_cached_token(as_dict)
+
+  def get_cached_token(self, as_dict=True):
     """Checks if the current access token is valid/we have one
        gets a new access token if necessary
     Returns:
         string: the access token for the Spotify API
     """
-    if not self.access_token or (datetime.now() >= self.tokenExpireTime):
-      requestCode = base64.b64encode(f'{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}'.encode("utf-8"))
 
+    token = AccessToken.query.filter(
+      AccessToken.expire_time>datetime.now()+timedelta(seconds=60)
+    ).order_by(desc(AccessToken.id)).first()
+    if token:
+      self.access_token = token.access_token
+      self.tokenExpireTime = token.expire_time
+
+    print("Tokens found", token)
+
+    if not token or (datetime.now() >= self.tokenExpireTime):
+      requestCode = base64.b64encode(f'{SPOTIPY_CLIENT_ID}:{SPOTIPY_CLIENT_SECRET}'.encode("utf-8"))
+      print("id %s secret: %s"%(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET))
+      print(list(SPOTIPY_CLIENT_ID))
       headers = {
         "Authorization": "Basic "+requestCode.decode("utf-8"),
         "Content-Type": "application/x-www-form-urlencoded"
       }
       pp = pprint.PrettyPrinter(indent=4)
-      print(headers)
-      r = requests.post(os.path.join(SPOTIFY_AUTH_BASE_URL, "api/token"), headers=headers, data={"grant_type": "client_credentials"})
-      data = r.json()
+      print("HEADERS",headers)
 
+      r = requests.post(os.path.join(SPOTIPY_AUTH_BASE_URL, "api/token"), headers=headers, data={"grant_type": "client_credentials"})
+      data = r.json()
+      print("data", data)
       self.access_token = data["access_token"]
       self.tokenExpireTime = datetime.now() + timedelta(seconds=data["expires_in"])
-
+      print("Returning data", data)
       newToken = AccessToken(access_token=self.access_token, expire_time=self.tokenExpireTime)
-      db.session.add(newToken)
-      db.session.commit()
-      return self.access_token
+      #db.session.add(newToken)
+      #db.session.commit()
+      print("Returning token", data)
+      return data if as_dict else data["access_token"]
 
-    return self.access_token
+    expire_seconds = (token.expire_time - datetime.now()).total_seconds
+    return_dict = {'access_token': self.access_token, 'expires_in': expire_seconds, token_type: 'bearer'}
+    print("Returning data from db", return_dict)
+    return return_dict if as_dict else self.access_token
 
 
   @property
