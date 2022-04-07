@@ -36,11 +36,6 @@ class DatabaseTokenCacheHandler(CacheHandler):
       lastTokenUpdate (datetime): the datetime when the token was last updated
       tokenExpireTime (datetime): the datetime when the token will/has expire(d)
   """
-  def __init__(self):
-    self.access_token = None
-    self.lastTokenUpdate = None
-    self.tokenExpireTime = None
-    super().__init__()
 
 
   def save_token_to_cache(self, token_info):
@@ -62,19 +57,21 @@ class DatabaseTokenCacheHandler(CacheHandler):
     ).order_by(desc(AccessToken.id)).first()
 
     if token:
-      self.access_token = token.access_token
-      self.tokenExpireTime = token.expire_time
+      print("exp time", token.expire_time)
+      print("now", datetime.now())
+      print("Not expired" if token.expire_time > datetime.now() else "expired")
 
-    # if a valid token doesn't exist, fetch a new one from the Spotify API
-    if not token:
+      # calculate a new expire time in seconds for the existing token
+      expire_seconds = int((token.expire_time - datetime.now()).total_seconds())
+      token_data = {'access_token': token.access_token, 'expires_in': expire_seconds, 'token_type': 'bearer'}
+      print('Returning data from db', token_data)
+
+    else:
+      # if a valid token doesn't exist, fetch a new one from the Spotify API
       token_data = self.fetch_token()
-      return token_data if as_dict else token_data['access_token']
 
-    # calculate a new expire time in seconds for the existing token
-    expire_seconds = int((token.expire_time - datetime.now()).total_seconds())
-    return_dict = {'access_token': self.access_token, 'expires_in': expire_seconds, 'token_type': 'bearer'}
-    print('Returning data from db', return_dict)
-    return return_dict if as_dict else self.access_token
+
+    return token_data if as_dict else token_data['access_token']
 
   def fetch_token(self):
     """
@@ -91,12 +88,12 @@ class DatabaseTokenCacheHandler(CacheHandler):
     r = requests.post(os.path.join(SPOTIPY_AUTH_BASE_URL, 'api/token'), headers=headers, data={'grant_type': 'client_credentials'})
     data = r.json()
 
-    self.access_token = data['access_token']
-    self.tokenExpireTime = datetime.now() + timedelta(seconds=data['expires_in'])
+    access_token = data['access_token']
+    token_expire_time = datetime.now() + timedelta(seconds=data['expires_in'])
 
 
     # finally save the token
-    newToken = AccessToken(access_token=self.access_token, expire_time=self.tokenExpireTime)
+    newToken = AccessToken(access_token=access_token, expire_time=token_expire_time)
     db.session.add(newToken)
     db.session.commit()
     print('Returning token', data)
