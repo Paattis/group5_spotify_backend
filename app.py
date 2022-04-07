@@ -1,7 +1,11 @@
 from flask import Flask
 import sys
 import db
-from classes import SpotifyApi
+from classes import DatabaseTokenCacheHandler
+from spotipy.oauth2 import SpotifyClientCredentials
+import spotipy
+import os
+import json
 
 app = Flask(__name__)
 app.secret_key = 'DEV'
@@ -20,18 +24,20 @@ for path in module_path:
 database, migrate = db.init_app(app)
 
 
-@app.route("/")
-def index():
-    import spotipy
-    import os
-    from spotipy.oauth2 import SpotifyClientCredentials
-    print("id", os.getenv("SPOTIPY_CLIENT_ID"))
-    print("id", os.getenv("SPOTIPY_CLIENT_SECRET"))
-    auth_manager = SpotifyApi()
-    #print(SpotifyClientCredentials().get_access_token())
-    #auth_manager = SpotifyClientCredentials()
-    sp = spotipy.Spotify(auth_manager=auth_manager)
-    dat = sp.search(q='pitbull', market='FI')
+@app.route('/songs/search/<searchTerm>')
+def search_song(searchTerm: str):
+    """Searches for songs with the search term from the Spotify API and returns them
+    
+    Args:
+        searchTerm (str): the search term
+    
+    Returns:
+        dict: the search results 
+    """
 
-    #SpotifyApi().get_cached_token()
-    return dat
+    auth_manager = DatabaseTokenCacheHandler()
+
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+    dat = sp.search(q=searchTerm, limit=50, type=['track'],market='FI')
+
+    return dat.get('tracks')
