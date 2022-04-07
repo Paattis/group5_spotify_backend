@@ -67,28 +67,8 @@ class DatabaseTokenCacheHandler(CacheHandler):
 
     # if a valid token doesn't exist, fetch a new one from the Spotify API
     if not token:
-      requestCode = base64.b64encode(f'{SPOTIPY_CLIENT_ID}:{SPOTIPY_CLIENT_SECRET}'.encode('utf-8'))
-
-      headers = {
-        'Authorization': 'Basic '+requestCode.decode('utf-8'),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-      pp = pprint.PrettyPrinter(indent=4)
-
-
-      r = requests.post(os.path.join(SPOTIPY_AUTH_BASE_URL, 'api/token'), headers=headers, data={'grant_type': 'client_credentials'})
-      data = r.json()
-
-      self.access_token = data['access_token']
-      self.tokenExpireTime = datetime.now() + timedelta(seconds=data['expires_in'])
-
-
-      # finally save the token
-      newToken = AccessToken(access_token=self.access_token, expire_time=self.tokenExpireTime)
-      db.session.add(newToken)
-      db.session.commit()
-      print('Returning token', data)
-      return data if as_dict else data['access_token']
+      token_data = self.fetch_token()
+      return token_data if as_dict else token_data['access_token']
 
     # calculate a new expire time in seconds for the existing token
     expire_seconds = int((token.expire_time - datetime.now()).total_seconds())
@@ -96,3 +76,28 @@ class DatabaseTokenCacheHandler(CacheHandler):
     print('Returning data from db', return_dict)
     return return_dict if as_dict else self.access_token
 
+  def fetch_token(self):
+    """
+      Fetches a new token from the Spotify API and returns the response
+    """
+    requestCode = base64.b64encode(f'{SPOTIPY_CLIENT_ID}:{SPOTIPY_CLIENT_SECRET}'.encode('utf-8'))
+
+    headers = {
+      'Authorization': 'Basic '+requestCode.decode('utf-8'),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+
+    r = requests.post(os.path.join(SPOTIPY_AUTH_BASE_URL, 'api/token'), headers=headers, data={'grant_type': 'client_credentials'})
+    data = r.json()
+
+    self.access_token = data['access_token']
+    self.tokenExpireTime = datetime.now() + timedelta(seconds=data['expires_in'])
+
+
+    # finally save the token
+    newToken = AccessToken(access_token=self.access_token, expire_time=self.tokenExpireTime)
+    db.session.add(newToken)
+    db.session.commit()
+    print('Returning token', data)
+    return data
