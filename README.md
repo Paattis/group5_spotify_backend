@@ -28,6 +28,13 @@ DB_HOST="127.0.0.1"
 DB_USER=(your db user's name here)
 DB_PASS=(your db password here)
 DB_NAME=""
+
+SPOTIPY_CLIENT_ID=
+SPOTIPY_CLIENT_SECRET=
+
+SPOTIPY_REDIRECT_URI="http://127.0.0.1:8000/redir"
+SPOTIPY_AUTH_BASE_URL="https://accounts.spotify.com/"
+SPOTIPY_BASE_URL="https://api.spotify.com/v1/"
 ```
 
 ### Set flask variables
