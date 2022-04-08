@@ -15,6 +15,7 @@ $ .\venv\Scripts\activate.bat   // Windows
 
 ### Install the required packages
 ```
+$ pip install wheel
 $ pip install -r requirements.txt
 ```
 
