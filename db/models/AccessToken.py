@@ -1,8 +1,10 @@
+from sqlalchemy_serializer import SerializerMixin
+
 from sqlalchemy import Integer, String, Column, DateTime
 from .DateMixin import DateMixin
 from db.setup import db
 
-class AccessToken(db.Model, DateMixin):
+class AccessToken(db.Model, DateMixin, SerializerMixin):
 
     """Summary
     
