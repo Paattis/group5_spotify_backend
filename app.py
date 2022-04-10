@@ -58,6 +58,29 @@ def add_location(name: str):
 
   return location.to_dict()
 
+
+@app.route('/location/<location_id>/')
+@app.errorhandler(404)
+def get_location(location_id: int):
+  """Returns the location with the corresponding id
+
+  Args:
+      location_id (int): the id of the location
+
+  Returns:
+      dict: The corresponding location
+  """
+  location = Location.query.filter(
+    Location.id==location_id
+  ).first()
+
+  if not location:
+    return {'msg': 'Location not found'}, 404
+
+
+  return {'songs': location.to_dict()}
+
+
 @app.route('/location/<location_id>/songs/<song_id>', methods=['POST',])
 @app.errorhandler(500)
 @app.errorhandler(404)
@@ -99,6 +122,7 @@ def add_location_song(location_id: int, song_id: int):
     return {'msg': 'Song added successfully'}
 
 
+
 @app.route('/songs/search/<searchTerm>')
 def search_song(searchTerm: str):
     """Searches for songs with the search term from the Spotify API and returns them
@@ -113,7 +137,7 @@ def search_song(searchTerm: str):
     auth_manager = DatabaseTokenCacheHandler()
 
     sp = spotipy.Spotify(auth_manager=auth_manager)
-    dat = sp.search(q=searchTerm, limit=50, type=['track'],market='FI')
+    data = sp.search(q=searchTerm, limit=50, type=['track'],market='FI')
 
-    return dat.get('tracks')
+    return data.get('tracks')
 

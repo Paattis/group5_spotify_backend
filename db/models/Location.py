@@ -12,7 +12,7 @@ songs = db.Table('locationsong',
 
 class Location(db.Model, DateMixin, SerializerMixin):
     __tablename__ = "Location"
-    serialize_rules = ('-songs.location')
+    serialize_rules = ('-songs.locations',)
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
