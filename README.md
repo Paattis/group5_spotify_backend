@@ -30,6 +30,10 @@ DB_USER=(your db user's name here)
 DB_PASS=(your db password here)
 DB_NAME=""
 
+#deployment key
+FLASK_SECRET_KEY=(random generate one when deploying to production)
+
+#spotify API credentials
 SPOTIPY_CLIENT_ID=
 SPOTIPY_CLIENT_SECRET=
 

@@ -7,9 +7,11 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
 import os
 import json
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'DEV'
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 # TODO: Better configs
 
 # add modules to path for easy access
