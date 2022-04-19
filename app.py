@@ -81,17 +81,17 @@ def get_location(location_id: int):
   return {'songs': location.to_dict()}
 
 
-@app.route('/location/<location_id>/songs/<song_id>', methods=['POST',])
+@app.route('/location/<location_id>/songs/<spotify_id>', methods=['POST',])
 @app.errorhandler(500)
 @app.errorhandler(404)
 @app.errorhandler(400)
-def add_location_song(location_id: int, song_id: int):
+def add_location_song(location_id: int, spotify_id: str):
     """Adds a song to a location after validating that both
     the location and the song exist.
     
     Args:
         location_id (int): the id of the location in the database
-        song_id (int): the id of the song in the database
+        spotify_id (str): the id of the song in the spotify API
     """
 
     # check if the location exists in the database
@@ -104,11 +104,35 @@ def add_location_song(location_id: int, song_id: int):
 
     # check if the song exists
     song = Song.query.filter(
-      Song.id==song_id
+      Song.spotifyId==spotify_id
     ).first()
 
     if not song:
-      return {'msg': 'Song not found'}, 404
+      # song doesn't exist, fetch it from the Spotify API and add
+      # it to the db
+      auth_manager = DatabaseTokenCacheHandler()
+      sp = spotipy.Spotify(auth_manager=auth_manager)
+      
+
+      from spotipy.exceptions import SpotifyException
+      try:
+        song_data = sp.track(spotify_id, market='FI')
+      except SpotifyException:
+        # song doesn't exist
+        return {'msg': 'Invalid song id'}, 500
+
+      try:
+        # add song to database if it exists
+        song = Song(
+          name=song_data.get('name'),
+          spotifyId=spotify_id,
+          # TODO: add popularity score
+        )
+        db.db.session.add(song)
+        db.db.session.commit()
+      except Exception as e:
+        return {'msg': 'Something went wrong when adding a song to the location'}, 500
+
 
     if song in location.songs:
       return {'msg': 'Song already in location\'s songs'}, 400
