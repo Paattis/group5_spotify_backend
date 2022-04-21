@@ -28,6 +28,16 @@ def create_app(test_config=None):
   # Setup SQLAlchemy
   database, migrate = db.init_app(app)
 
+  @app.route('/favicon.ico')
+  def favicon():
+    """an empty route for favicon.ico
+    returns a 200 to prevent a 404 error from being handled when accessing
+    from the browser
+    Returns:
+        str: an empty string
+    """
+    return ""
+
   @app.route('/location/<name>', methods=['POST',])
   @app.errorhandler(500)
   def add_location(name: str):
