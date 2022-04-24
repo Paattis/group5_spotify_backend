@@ -135,11 +135,29 @@ def create_app(test_config=None):
           # song doesn't exist
           return {'msg': 'Invalid song id'}, 500
 
+
         try:
           # add song to database if it exists
+          album = song_data.get('album')
+
+          # get the desired thumbnail's url, default to the largest if not found
+          desired_thumb_size = 300
+          try:
+            album_thumb = filter(
+              lambda x: x.get('width') == desired_thumb_size,
+              album.get('images')
+            )
+            album_thumb = list(album_thumb)[0]
+          except IndexError as e:
+            # fall back to the largest
+            album_thumb = album.get('images').sort(lambda x:-x['width'])
+
           song = Song(
             name=song_data.get('name'),
             spotifyId=spotify_id,
+            artist=', '.join([a['name'].title() for a in song_data.get('artists')]),
+            album_name=album.get('name'),
+            album_thumb=album_thumb.get('url')
             # TODO: add popularity score
           )
           db.db.session.add(song)

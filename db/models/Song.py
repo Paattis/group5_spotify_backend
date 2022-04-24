@@ -8,6 +8,9 @@ class Song(db.Model, DateMixin, SerializerMixin):
     id = Column(Integer, primary_key=True)
     spotifyId = Column(String(255), nullable=True)
     name = Column(String(255))
+    artist = Column(String(255))
+    album_name = Column(String(255))
+    album_thumb = Column(String(255))
     popularity = Column(Integer, default=0)
 
     def __repr__(self):
