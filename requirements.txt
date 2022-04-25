@@ -9,3 +9,4 @@ requests==2.27.1
 spotipy==2.19.0
 SQLAlchemy-serializer==1.4.1
 waitress==2.1.1
+Flask-Caching==2.1.1

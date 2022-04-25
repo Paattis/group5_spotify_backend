@@ -1,4 +1,6 @@
 from flask import Flask, Response
+from flask_caching import Cache
+
 import sys
 import db
 from db.models import Location, Song
@@ -12,9 +14,24 @@ from dotenv import load_dotenv
 def create_app(test_config=None):
   load_dotenv()
 
+  config = {
+      'CACHE_TYPE': 'SimpleCache',  # Flask-Caching related configs
+      'CACHE_TRESHOLD': int(os.getenv('FLASK_CACHE_TRESHOLD')),
+      'CACHE_DEFAULT_TIMEOUT': int(os.getenv('FLASK_CACHE_TIMEOUT')),
+  }
+
+  # if running in production, enable file system cache
+  if os.getenv('FLASK_ENV') != 'development':
+    config['CACHE_TYPE'] = 'FileSystemCache'
+    config['CACHE_DIR'] = os.getenv('FLASK_CACHE_DIR')
+
+
   app = Flask(__name__)
   app.secret_key = os.getenv('FLASK_SECRET_KEY')
   # TODO: Better configs
+
+  app.config.from_mapping(config)
+  cache = Cache(app)
 
   # add modules to path for easy access
   module_path = [
@@ -180,6 +197,7 @@ def create_app(test_config=None):
 
 
   @app.route('/songs/search/<searchTerm>')
+  @cache.cached()
   def search_song(searchTerm: str):
       """Searches for songs with the search term from the Spotify API and returns them
       
