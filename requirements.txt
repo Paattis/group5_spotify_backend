@@ -1,4 +1,4 @@
-Flask==2.1.1
+Flask<=2.1.1
 Flask-SQLAlchemy==2.5.1
 Flask-Migrate==3.1.0
 Flask-HTTPAuth==4.5.0
@@ -8,4 +8,5 @@ spotipy==2.19.0
 requests==2.27.1
 spotipy==2.19.0
 SQLAlchemy-serializer==1.4.1
-waitress==2.1.1
+waitress<=2.1.1
+Flask-Caching==1.10.1

@@ -33,6 +33,13 @@ DB_NAME=""
 #deployment key
 FLASK_SECRET_KEY=(random generate one when deploying to production)
 
+#cache timeout in seconds
+FLASK_CACHE_TIMEOUT=1800
+FLASK_CACHE_DIR=(the directory you want to store the cache files in)
+
+# the amount of cached items to be held at one time
+FLASK_CACHE_TRESHOLD=100
+
 #spotify API credentials
 SPOTIPY_CLIENT_ID=
 SPOTIPY_CLIENT_SECRET=
