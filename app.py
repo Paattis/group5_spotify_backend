@@ -3,7 +3,7 @@ from flask_caching import Cache
 
 import sys
 import db
-from db.models import Location, Song
+from db.models import Location, LocationSong, Song
 from classes import DatabaseTokenCacheHandler
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy
@@ -105,11 +105,34 @@ def create_app(test_config=None):
       Location.id==location_id
     ).first()
 
+
     if not location:
       return {'msg': 'Location not found'}, 404
 
 
-    return {'songs': location.to_dict()}
+    # annotate data with local popularity of the songs
+    # not a good way to do this, don't do this
+    # (were gonna do it anyway)
+
+    # TODO: move to separate function and use caching to prevent constant db hits and speed 
+    # response times
+    location_songs = LocationSong.query.filter(
+      LocationSong.location_id==location.id
+    )
+
+    # make song_id: song_local_popularity for easier access
+    song_ids = dict([(lso.song_id, lso.weighted_popularity()) for lso in location_songs])
+
+    # convert the location object to a dictionary form that will be returned
+    location_dict = location.to_dict()
+
+    # add an extra property "song_local_popularity" to each song
+    for song in location_dict.get('songs'):
+      local_popularity = song.get('id', 0)
+      song['song_local_popularity'] = song_ids.get(local_popularity or 0)
+
+
+    return {'songs': location_dict}
 
 
   @app.route('/location/<location_id>/songs/<spotify_id>', methods=['POST',])
@@ -126,6 +149,7 @@ def create_app(test_config=None):
       """
 
       # check if the location exists in the database
+
       location = Location.query.filter(
         Location.id==location_id
       ).first()
@@ -184,10 +208,30 @@ def create_app(test_config=None):
 
 
       if song in location.songs:
-        return {'msg': 'Song already in location\'s songs'}, 400
+
+        #db.db.session.commit()
+        # get the row from the intermediate table
+        location_song = LocationSong.query.filter(
+          LocationSong.song_id==song.id,
+          LocationSong.location_id==location.id
+        ).first()
+
+        if not location_song.song_local_popularity:
+          location_song.song_local_popularity = 0
+
+        location_song.song_local_popularity += 1
+        song.popularity += 1
+
+        db.db.session.commit()
+        #import ipdb;ipdb.set_trace()
+        #db.db.session.commit()
+        return {'msg': 'Song already in location\'s songs'}
+
+
 
       try:
-        location.songs.append(song)
+        location_song = LocationSong(song_id=song.id, location_id=location.id)
+        s = db.db.session.add(location_song)
         db.db.session.commit()
       except Exception as e:
         return {'msg': 'Something went wrong when adding a song to the location'}, 500
