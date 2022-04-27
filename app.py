@@ -11,6 +11,8 @@ import os
 import json
 from dotenv import load_dotenv
 
+from classes import Messages
+
 def create_app(test_config=None):
   load_dotenv()
 
@@ -85,7 +87,7 @@ def create_app(test_config=None):
         db.db.session.add(location)
         db.db.session.commit()
       except Exception as e:
-        return {'msg': 'Something went wrong when saving location to the database'}, 500
+        return {'msg': Messages.codes.ERR_LOCATION_SAVE_500, 'verbose': Messages.ERR_LOCATION_SAVE_500}, 500
 
     return location.to_dict()
 
@@ -107,7 +109,7 @@ def create_app(test_config=None):
 
 
     if not location:
-      return {'msg': 'Location not found'}, 404
+      return {'msg': Messages.codes.ERR_LOCATION_404, 'verbose': Messages.ERR_LOCATION_404}, 404
 
 
     # annotate data with local popularity of the songs
@@ -155,7 +157,7 @@ def create_app(test_config=None):
       ).first()
 
       if not location:
-        return {'msg': 'Location not found'}, 404
+        return {'msg': Messages.codes.ERR_LOCATION_404, 'verbose': Messages.ERR_LOCATION_404}, 404
 
       # check if the song exists
       song = Song.query.filter(
@@ -174,7 +176,7 @@ def create_app(test_config=None):
           song_data = sp.track(spotify_id, market='FI')
         except SpotifyException:
           # song doesn't exist
-          return {'msg': 'Invalid song id'}, 500
+          return {'msg': Messages.codes.ERR_SONG_SPOTIFY_ID_500, 'verbose': Messages.ERR_SONG_SPOTIFY_ID_500}, 500
 
 
         try:
@@ -199,12 +201,11 @@ def create_app(test_config=None):
             artist=', '.join([a['name'].title() for a in song_data.get('artists')]),
             album_name=album.get('name'),
             album_thumb=album_thumb.get('url')
-            # TODO: add popularity score
           )
           db.db.session.add(song)
           db.db.session.commit()
         except Exception as e:
-          return {'msg': 'Something went wrong when adding a song to the location'}, 500
+          return {'msg': Messages.codes.ERR_SONG_LOCATION_SAVE_500, 'verbose': Messages.ERR_SONG_LOCATION_SAVE_500}, 500
 
 
       if song in location.songs:
@@ -225,7 +226,7 @@ def create_app(test_config=None):
         db.db.session.commit()
         #import ipdb;ipdb.set_trace()
         #db.db.session.commit()
-        return {'msg': 'Song already in location\'s songs'}
+        return {'msg': Messages.codes.SONG_ALREADY_ADDED, 'verbose': Messages.SONG_ALREADY_ADDED}
 
 
 
@@ -234,9 +235,9 @@ def create_app(test_config=None):
         s = db.db.session.add(location_song)
         db.db.session.commit()
       except Exception as e:
-        return {'msg': 'Something went wrong when adding a song to the location'}, 500
+        return {'msg': Messages.codes.ERR_LOCATION_SAVE_500, 'verbose': Messages.ERR_LOCATION_SAVE_500}, 500
 
-      return {'msg': 'Song added successfully'}
+      return {'msg': Messages.codes.SONG_ADD_SUCCESS, 'verbose': Messages.SONG_ADD_SUCCESS}
 
 
 
