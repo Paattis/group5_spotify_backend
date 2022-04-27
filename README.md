@@ -65,3 +65,14 @@ See https://flask-migrate.readthedocs.io/en/latest/ for more info.
 ```
 $ flask run
 ```
+
+
+### Message code -> message dictionary
+| code | message | 
+| ----- | ----- |
+| ERR_LOCATION_SAVE_500 | Something went wrong when adding a song to the location | 
+| ERR_LOCATION_404 | Location not found | 
+| ERR_SONG_SPOTIFY_ID_500 | Invalid song id | 
+| ERR_SONG_LOCATION_SAVE_500 | Something went wrong when adding a song to the location | 
+| SONG_ALREADY_ADDED | Song is already in the songs of the location | 
+| SONG_ADD_SUCCESS | Song added successfully | 
